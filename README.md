@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-
-## About Laravel
-
-Task Project is sample for laravel exam
-
-## javad heidarpour
-jheidarpour@gmail.com
-=======
 ## Task Simple
 javad heidarpour
 jheidarpour@gmail.com
