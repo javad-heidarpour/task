@@ -35,10 +35,14 @@ Route::middleware([
     })->name('dashboard');
 });
 
-// Route::prefix('task')->controller(MainController::class)->middleware(['auth:sanctum', 'verified'])->group(function () {
-//     Route::get('/store', 'store')->name('task.store');
-// });
+Route::prefix('task')->controller(MainController::class)->middleware(['auth:sanctum', 'verified'])->group(function () {
+    Route::put('/update', 'update')->name('task.update2');
+});
 
 
-Route::resource('task', MainController::class)->shallow();
+Route::resource('task', MainController::class)->shallow()->middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+]);
 

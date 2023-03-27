@@ -63,6 +63,16 @@ class MainController extends Controller
     public function update(UpdateMainRequest $request, Main $main)
     {
         //
+        $main = Main::find($request->id);
+        $main->name = $request->name;
+        $main->priority = $request->priority;
+        if ($main->save())
+            return $main;
+            // return response('Hello World');
+          
+        else
+            return null;
+
     }
 
     /**
