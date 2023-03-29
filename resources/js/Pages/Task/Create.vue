@@ -1,10 +1,7 @@
 <script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import IndexTr from './Index-tr.vue';
 import DialogModal from '@/Components/DialogModal.vue';
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
-import ActionSection from '@/Components/ActionSection.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import axios from "axios";
 import Spinner from "@/Componnet-Task/Spinner.vue";
@@ -12,15 +9,16 @@ import Spinner from "@/Componnet-Task/Spinner.vue";
 import InputError from '@/Components/InputError.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
-    tasks: Object,
+    task: Object,
+    title: String,
+    confirmingModal: Boolean,
+    typeMode: {
+        type: Number,
+        default: 0
+    },
 });
-const SpinnerSohw = ref(false);
-const nameInput = ref(null);
-const priorityInput = ref(null);
-
 const form = useForm({
     id: null,
     name: null,
@@ -28,29 +26,46 @@ const form = useForm({
     created_at: null,
     updated_at: null,
 });
-var confirmingModal = ref(false);
+const nameInput = ref(null);
+const priorityInput = ref(null);
+const SpinnerSohw = ref(false);
+const confirmingModal = ref(props.confirmingModal);
+
 const closeModal = () => {
     confirmingModal.value = false;
+
+    form.reset();
+};
+const editTask = (task) => {
+    confirmingModal.value = true;
+
+
+    form.id = task.id;
+    form.name = task.name;
+    form.priority = task.priority;
+
 }
 const save = () => {
+    console.log('save', props.task);
 
+    form.id = props.task.id;
+    form.name = props.task.name;
+    form.priority = props.task.priority;
 
     console.log('save', form);
     SpinnerSohw.value = true;
-    axios.post(route("task.store"), form)
+    axios.put(route("task.update2"), form)
         .then(function (response) {
             console.log('222', response.data);
-
             form.reset();
             closeModal();
             SpinnerSohw.value = false;
-       
-            window.location.href = "task";
+
         })
         .catch(function (err) {
             form.errors = [];
-            console.log('error', err.response);
-            if (err && err.response.status == 422) {
+            console.log('222', err.response);
+            if (err.response.status == 422) {
                 if (err.response.data.errors.name) {
                     nameInput.value.focus();
                     form.errors.name = err.response.data.errors.name[0];
@@ -64,57 +79,41 @@ const save = () => {
 
         });
 
+    // form.put(route('task.update2'), {
+    //     preserveScroll: true,
+    //     onSuccess: () => closeModal(),
+    //     onError: () => nameInput.value.focus(),
+    //     onFinish: (res) => {
+    //         console.log(res.data);
+    //         if (res.data) {
+    //             form.id = res.data.id;
+    //             form.name = res.data.name;
+    //             form.priority = res.data.priority;
+    //             // props.task = res.data;
+    //         }
+    //         form.reset();
+    //     },
+    // });
 };
 </script>
 
 <template>
-    <AppLayout title="Dashboard">
-
-
-        <div class="relative rounded-xl overflow-auto m-2 border bg-white">
-            <div class="shadow-sm overflow-hidden my-8">
-                <span @click="confirmingModal = true"
-                    class="m-5 bg-purple-600 px-2 border text-white border-purple-400 rounded hover:bg-purple-200 hover:text-purple-600 cursor-pointer">
-                    Create New Task
-                </span>
-                <table class="border-collapse table-auto w-full text-sm text-center ">
-                    <thead class="border-b font-bold bg-purple-100">
-                        <tr>
-                            <td>id</td>
-                            <td>name</td>
-                            <td>priority</td>
-                            <td>opration</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template v-for="(task, index)  in tasks" :key="index">
-                            <IndexTr :task="task" />
-
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </AppLayout>
-
-    <!-- ---- -->
-    <DialogModal :show="confirmingModal" @close="closeModal">
-        <Spinner v-if="SpinnerSohw" />
-
+    <DialogModal :show="true" @close="closeModal">
         <template #title>
-            Create Task
+            {{ title }}
         </template>
 
         <template #content>
             <Spinner v-if="SpinnerSohw" />
 
-            To create a new task, please enter the following information carefully.
+            You can edit your work in this window.
+
             <div class="mt-4">
-                <TextInput ref="nameInput" v-model="form.name" type="text" class="mt-1 block w-3/4" placeholder="Name"
+                <TextInput ref="nameInput" v-model="task.name" type="text" class="mt-1 block w-3/4" placeholder="Name"
                     autocomplete="current-name" @keyup.enter="save" />
 
                 <InputError :message="form.errors.name" class="mt-2" />
-                <TextInput ref="priorityInput" v-model="form.priority" type="number" min="0" max="100"
+                <TextInput ref="priorityInput" v-model="task.priority" type="number" min="0" max="100"
                     class="mt-1 block w-3/4" placeholder="priority" autocomplete="current-priority" @keyup.enter="save" />
                 <InputError :message="form.errors.priority" class="mt-2" />
             </div>

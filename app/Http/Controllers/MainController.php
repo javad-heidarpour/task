@@ -37,7 +37,15 @@ class MainController extends Controller
     public function store(StoreMainRequest $request)
     {
         //
-        return 1;
+        $main = new Main;
+        $main->name = $request->name;
+        $main->priority = $request->priority;
+        if ($main->save())
+            return $main;
+        // return response('Hello World');
+        else
+            return null;
+
     }
 
     /**
@@ -68,8 +76,7 @@ class MainController extends Controller
         $main->priority = $request->priority;
         if ($main->save())
             return $main;
-            // return response('Hello World');
-          
+        // return response('Hello World');
         else
             return null;
 

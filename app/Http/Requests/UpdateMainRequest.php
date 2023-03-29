@@ -23,7 +23,7 @@ class UpdateMainRequest extends FormRequest
     {
         return [
             'name' => 'required|max:255',
-            'priority' => 'required|digits',
+            'priority' => 'required|digits:1',
 
         ];
     }

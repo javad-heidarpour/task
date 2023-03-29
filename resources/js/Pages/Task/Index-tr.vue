@@ -7,6 +7,7 @@ import { useForm } from '@inertiajs/vue3';
 import ActionSection from '@/Components/ActionSection.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import axios from "axios";
+import Spinner from "@/Componnet-Task/Spinner.vue";
 
 import InputError from '@/Components/InputError.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
@@ -25,7 +26,7 @@ const form = useForm({
 });
 const nameInput = ref(null);
 const priorityInput = ref(null);
-
+const SpinnerSohw = ref(false);
 const confirmingEditTask = ref(false);
 
 const closeModal = () => {
@@ -50,12 +51,13 @@ const save = () => {
     form.priority = props.task.priority;
 
     console.log('save', form);
-
+    SpinnerSohw.value = true;
     axios.put(route("task.update2"), form)
         .then(function (response) {
             console.log('222', response.data);
             form.reset();
             closeModal();
+            SpinnerSohw.value = false;
 
         })
         .catch(function (err) {
@@ -71,7 +73,7 @@ const save = () => {
                     form.errors.priority = err.response.data.errors.priority[0];
                 }
             }
-
+            SpinnerSohw.value = false;
 
         });
 
@@ -123,6 +125,8 @@ const save = () => {
         </template>
 
         <template #content>
+            <Spinner v-if="SpinnerSohw" />
+
             You can edit your work in this window.
 
             <div class="mt-4">
@@ -141,7 +145,7 @@ const save = () => {
                 Cancel
             </SecondaryButton>
 
-            <PrimaryButton class="ml-3" :class="{ 'opacity-25': task.processing }" :disabled="task.processing"
+            <PrimaryButton class="ml-3" :class="{ 'opacity-25': form.processing }" :disabled="form.processing"
                 @click="save">
                 Save
             </PrimaryButton>
