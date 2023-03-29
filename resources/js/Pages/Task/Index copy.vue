@@ -1,6 +1,9 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import draggable from 'vuedraggable';
+
+
 import AppLayout from '@/Layouts/AppLayout.vue';
+import IndexTr from './Index-tr.vue';
 import DialogModal from '@/Components/DialogModal.vue';
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
@@ -15,8 +18,12 @@ import TextInput from '@/Components/TextInput.vue';
 import { usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
-    task: Object,
+    tasks: Object,
 });
+const SpinnerSohw = ref(false);
+const nameInput = ref(null);
+const priorityInput = ref(null);
+
 const form = useForm({
     id: null,
     name: null,
@@ -24,44 +31,29 @@ const form = useForm({
     created_at: null,
     updated_at: null,
 });
-const nameInput = ref(null);
-const priorityInput = ref(null);
-const SpinnerSohw = ref(false);
-const confirmingEditTask = ref(false);
-
+var confirmingModal = ref(false);
 const closeModal = () => {
-    confirmingEditTask.value = false;
-
-    form.reset();
-};
-const editTask = (task) => {
-    confirmingEditTask.value = true;
-    form.id = task.id;
-    form.name = task.name;
-    form.priority = task.priority;
-
+    confirmingModal.value = false;
 }
 const save = () => {
-    console.log('save', props.task);
 
-    form.id = props.task.id;
-    form.name = props.task.name;
-    form.priority = props.task.priority;
 
     console.log('save', form);
     SpinnerSohw.value = true;
-    axios.put(route("task.update2"), form)
+    axios.post(route("task.store"), form)
         .then(function (response) {
             console.log('222', response.data);
+
             form.reset();
             closeModal();
             SpinnerSohw.value = false;
-
+       
+            window.location.href = "task";
         })
         .catch(function (err) {
             form.errors = [];
-            console.log('222', err.response);
-            if (err.response.status == 422) {
+            console.log('error', err.response);
+            if (err && err.response.status == 422) {
                 if (err.response.data.errors.name) {
                     nameInput.value.focus();
                     form.errors.name = err.response.data.errors.name[0];
@@ -75,64 +67,57 @@ const save = () => {
 
         });
 
-    // form.put(route('task.update2'), {
-    //     preserveScroll: true,
-    //     onSuccess: () => closeModal(),
-    //     onError: () => nameInput.value.focus(),
-    //     onFinish: (res) => {
-    //         console.log(res.data);
-    //         if (res.data) {
-    //             form.id = res.data.id;
-    //             form.name = res.data.name;
-    //             form.priority = res.data.priority;
-    //             // props.task = res.data;
-    //         }
-    //         form.reset();
-    //     },
-    // });
 };
 </script>
 
 <template>
-    <tr>
-        <td class="border">
-            {{ task.id }}
-        </td>
-        <td class="border">
+    <AppLayout title="Dashboard">
 
-            {{ task.name }}
 
-        </td>
-        <td class="border">
+        <div class="relative rounded-xl overflow-auto m-2 border bg-white">
+            <div class="shadow-sm overflow-hidden my-8">
+                <span @click="confirmingModal = true"
+                    class="m-5 bg-purple-600 px-2 border text-white border-purple-400 rounded hover:bg-purple-200 hover:text-purple-600 cursor-pointer">
+                    Create New Task
+                </span>
+                <table class="border-collapse table-auto w-full text-sm text-center ">
+                    <thead class="border-b font-bold bg-purple-100">
+                        <tr>
+                            <td>id</td>
+                            <td>name</td>
+                            <td>priority</td>
+                            <td>opration</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-for="(task, index)  in tasks" :key="index">
+                            <IndexTr :task="task" />
 
-            {{ task.priority }}
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </AppLayout>
 
-        </td>
-        <td class="border">
+    <!-- ---- -->
+    <DialogModal :show="confirmingModal" @close="closeModal">
+        <Spinner v-if="SpinnerSohw" />
 
-            <span @click="editTask(task);"
-                class="bg-green-100 px-2 border text-green-600 border-green-400 rounded hover:bg-green-200 cursor-pointer">
-                Edit
-            </span>
-        </td>
-    </tr>
-    <!-- ----- -->
-    <DialogModal :show="confirmingEditTask" @close="closeModal">
         <template #title>
-            Edit Task
+            Create Task
         </template>
 
         <template #content>
             <Spinner v-if="SpinnerSohw" />
 
-            You can edit your work in this window.
-
+            To create a new task, please enter the following information carefully.
             <div class="mt-4">
-                <TextInput ref="nameInput" v-model="task.name" type="text" class="mt-1 block w-3/4" placeholder="Name"
+                <TextInput ref="nameInput" v-model="form.name" type="text" class="mt-1 block w-3/4" placeholder="Name"
                     autocomplete="current-name" @keyup.enter="save" />
 
                 <InputError :message="form.errors.name" class="mt-2" />
-                <TextInput ref="priorityInput" v-model="task.priority" type="number" min="0" max="100"
+                <TextInput ref="priorityInput" v-model="form.priority" type="number" min="0" max="100"
                     class="mt-1 block w-3/4" placeholder="priority" autocomplete="current-priority" @keyup.enter="save" />
                 <InputError :message="form.errors.priority" class="mt-2" />
             </div>

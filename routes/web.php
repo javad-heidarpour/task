@@ -37,6 +37,12 @@ Route::middleware([
 
 Route::prefix('task')->controller(MainController::class)->middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::put('/update', 'update')->name('task.update2');
+    Route::get('/load', 'load')->name('task.load');
+    Route::post('/changePriority', 'changePriority')->name('task.changePriority');
+
+    Route::get('/Drag', function () {
+        return Inertia::render('Task/Drag');
+    })->name('Drag');
 });
 
 
@@ -45,4 +51,3 @@ Route::resource('task', MainController::class)->shallow()->middleware([
     config('jetstream.auth_session'),
     'verified',
 ]);
-

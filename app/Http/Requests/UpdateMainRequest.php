@@ -22,8 +22,8 @@ class UpdateMainRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|max:255',
-            'priority' => 'required|digits:1',
+            // 'name' => 'required|max:255',
+            // 'priority' => 'required|digits:1',
 
         ];
     }
